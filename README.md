@@ -1,0 +1,1 @@
+# Netlify lambda types for local testing
