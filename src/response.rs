@@ -6,6 +6,7 @@ pub struct Response {
 }
 
 impl Response {
+    // https://docs.rs/http/0.2.3/http/response/index.html
     // pub fn into_lambda(
     //     self: Response,
     // ) -> Result<netlify_lambda_http::Response<aws_lambda_events::encodings::Body>, String> {
@@ -21,6 +22,7 @@ impl Response {
         Ok(hyper::Response::builder()
             .status(200)
             // TODO: need to change protobuf type
+            .header("Content-Type", "text/plain; charset=utf-8")
             // .header("Content-Encoding", "application/protobuf")
             .body(hyper::Body::from(self.bytes))
             .expect("failed to render response"))
