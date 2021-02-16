@@ -1,5 +1,7 @@
 # Netlify Rust local testing
 
+Full working example [here](https://github.com/y2kappa/llambda-example). I use this as my getting started template.
+
 This library provides types and convertors to allow you to test your Netlify function locally using a hyper local server. The trick is to convert the lambda request and hyper request types into a common type, handle that separately, and return a common response type that converts back to the lambda response type or the hyper response type.
 
 
