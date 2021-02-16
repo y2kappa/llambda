@@ -1,43 +1,20 @@
-use aws_lambda_events::encodings::Body;
-use netlify_lambda_http::IntoResponse;
-type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
-pub struct Response {
-    pub bytes: Vec<u8>,
-}
 
-impl Response {
-    // https://docs.rs/http/0.2.3/http/response/index.html
-    // pub fn into_lambda(
-    //     self: Response,
-    // ) -> Result<netlify_lambda_http::Response<aws_lambda_events::encodings::Body>, String> {
-    //     Ok(netlify_lambda_http::Response::builder()
-    //         .status(200)
-    //         // TODO: need to change protobuf type
-    //         .header("Content-Encoding", "application/protobuf")
-    //         .body(aws_lambda_events::encodings::Body::from(self.bytes))
-    //         .expect("failed to render response"))
-    // }
+pub fn from_lambda(
+    lambda_response: http::Response<aws_lambda_events::encodings::Body>,
+) -> hyper::Response<hyper::Body> {
+    let body = match lambda_response.body().clone() {
+        aws_lambda_events::encodings::Body::Empty => hyper::Body::empty(),
+        aws_lambda_events::encodings::Body::Text(txt) => hyper::Body::from(txt.clone()),
+        aws_lambda_events::encodings::Body::Binary(txt) => hyper::Body::from(txt.clone()),
+    };
 
-    pub fn into_hyper(self: Response) -> Result<hyper::Response<hyper::Body>, Error> {
-        Ok(hyper::Response::builder()
-            .status(200)
-            // TODO: need to change protobuf type
-            .header("Content-Type", "text/plain; charset=utf-8")
-            // .header("Content-Encoding", "application/protobuf")
-            .body(hyper::Body::from(self.bytes))
-            .expect("failed to render response"))
-    }
-}
+    let mut headers = lambda_response.headers().clone();
 
-impl From<&str> for Response {
-    fn from(s: &str) -> Self {
-        Response { bytes: s.into() }
-    }
-}
+    let mut builder = hyper::Response::builder();
+    builder.headers_mut().replace(&mut headers);
+    let builder = builder.status(lambda_response.status());
+    let resp = builder.body(body).expect("Could not build response");
 
-impl IntoResponse for Response {
-    fn into_response(self) -> netlify_lambda_http::Response<Body> {
-        let body = Body::Binary(self.bytes);
-        netlify_lambda_http::Response::new(body)
-    }
+    println!("Response {:?}", resp);
+    resp
 }
