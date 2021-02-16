@@ -2,7 +2,11 @@
 
 Full working example [here](https://github.com/y2kappa/llambda-example). I use this as my getting started template.
 
+## Context
+
 This library provides types and convertors to allow you to test your Netlify function locally using a hyper local server. The trick is to convert the lambda request and hyper request types into a common type, handle that separately, and return a common response type that converts back to the lambda response type or the hyper response type.
+
+The lambda request parameters are a bit weird, I replicated them in new types provided in the `request` module. Even if they don't fully make sense to me, I wanted to stay true to what's happening in prod.
 
 
 The common handler:
@@ -70,11 +74,6 @@ async fn handle(request: Request<Body>) -> Result<Response<Body>, Error> {
 }
 
 ```
-
-## Context
-- Netlify basically reexports AWS Lambda's types
-- The lambda function's request parameters are a bit weird, I replicated them in new types provided in the `request` module. Even if they don't fully make sense, I wanted to stay true to what's happening in prod.
-
 
 ## How to build
 
