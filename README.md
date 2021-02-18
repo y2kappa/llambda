@@ -1,5 +1,9 @@
 # Netlify Rust local testing
 
+Test your Netlify Rust function locally. No docker container necessary.
+
+
+
 Full working example [here](https://github.com/y2kappa/llambda-example). I use this as my getting started template.
 
 ## Context
@@ -16,11 +20,12 @@ type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 use aws_lambda_events::encodings::Body;
 use http::Response;
-use llambda::Request;
+use llambda::request::Request;
 
 pub async fn handle(_: Request) -> Result<Response<Body>, Error> {
     let response = Response::builder()
         .status(200)
+        .header("Content-Type", "text/plain; charset=utf-8")
         .body(Body::from("🦀 Hello, Netlify 🦀"))
         .expect("failed to render response");
 
@@ -43,7 +48,7 @@ pub mod handler;
 #[lambda(http)]
 #[tokio::main]
 async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> {
-    let req = llambda::Request::from_lambda(request).await?;
+    let req = llambda::request::Request::from_lambda(request).await?;
     handler::handle(req).await
 }
 ```
@@ -67,7 +72,7 @@ pub async fn main() -> Result<(), Error> {
 }
 
 async fn handle(request: Request<Body>) -> Result<Response<Body>, Error> {
-    let req = llambda::Request::from_hyper(request).await?;
+    let req = llambda::request::Request::from_hyper(request).await?;
     let lambda_response = handler::handle(req).await?;
     let resp = llambda::response::from_lambda(lambda_response);
     Ok(resp)
